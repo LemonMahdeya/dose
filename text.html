@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة الجرعات</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { width: 50%; margin: auto; }
+        select, input { width: 100%; padding: 10px; margin: 10px 0; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>حاسبة الجرعات</h1>
+    <div class="container">
+        <label for="drug">اختر الدواء:</label>
+        <select id="drug" onchange="calculateDose()"></select>
+
+        <label for="age">اختر العمر:</label>
+        <select id="age" onchange="calculateDose()"></select>
+
+        <label for="weight">متوسط الوزن (كجم):</label>
+        <input type="text" id="weight" readonly>
+
+        <label for="dose">الجرعة المطلوبة:</label>
+        <input type="text" id="dose" readonly>
+
+        <label for="unit">وحدة الجرعة:</label>
+        <input type="text" id="unit" readonly>
+    </div>
+
+    <script>
+        // البيانات المستخرجة من ملف الإكسل
+        const data = [
+            { age: "1 Month", weight: 5.0, drug: "Paracetamol 160mg/5ml", unit: "ml/dose", formula: "weight/3" },
+            { age: "2 Months", weight: 5.5, drug: "Paracetamol 120mg/5ml", unit: "ml/dose", formula: "weight/2" },
+            { age: "3 Months", weight: 6.0, drug: "Paracetamol Drops", unit: "drop/dose", formula: "weight*2" },
+            { age: "4 Months", weight: 6.5, drug: "Ibuprofen Syrp", unit: "ml/dose", formula: "weight/3" },
+            { age: "5 Months", weight: 7.0, drug: "Dompredone", unit: "ml/dose", formula: "weight/4" }
+        ];
+
+        // استخراج القيم الفريدة للأدوية والأعمار
+        const drugs = [...new Set(data.map(item => item.drug))];
+        const ages = [...new Set(data.map(item => item.age))];
+
+        // ملء القوائم المنسدلة
+        function populateSelect(id, values) {
+            const select = document.getElementById(id);
+            values.forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+        }
+
+        populateSelect("drug", drugs);
+        populateSelect("age", ages);
+
+        // حساب الجرعة تلقائيًا
+        function calculateDose() {
+            const selectedDrug = document.getElementById("drug").value;
+            const selectedAge = document.getElementById("age").value;
+            const entry = data.find(item => item.drug === selectedDrug && item.age === selectedAge);
+
+            if (entry) {
+                document.getElementById("weight").value = entry.weight;
+                document.getElementById("unit").value = entry.unit;
+
+                // حساب الجرعة باستخدام المعادلة
+                let weight = entry.weight;
+                let doseFormula = entry.formula.replace("weight", weight);
+                let dose = eval(doseFormula); // تنفيذ المعادلة
+                document.getElementById("dose").value = dose.toFixed(2);
+            }
+        }
+    </script>
+</body>
+</html>
